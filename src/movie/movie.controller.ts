@@ -1,10 +1,22 @@
-import { Controller, Get, Post, Query, Body, Headers, Req, Res, Param } from '@nestjs/common';
-import type { Request, Response } from 'express'
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Headers,
+  Req,
+  Res,
+  Param,
+  Patch,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from 'src/dto/create-movie.dto';
 
-
-@Controller('movies') 
+@Controller('movies')
 export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
@@ -15,10 +27,24 @@ export class MovieController {
 
   @Post()
   create(@Body() dto: CreateMovieDto) {
-    return this.movieService.create(dto)
+    return this.movieService.create(dto);
+  }
+
+  @Get(':id')
+  getById(@Param('id') id: string) {
+    return this.movieService.getById(id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() dto: CreateMovieDto) {
+    return this.movieService.update(id, dto);
+  }
+
+  @Delete(':id') 
+  delete(@Param('id') id: string) {
+    return this.movieService.delete(id)
   }
 }
-
 
 // @Controller('movies')
 // export class MovieController {
@@ -37,7 +63,7 @@ export class MovieController {
 //     return userAgent;
 //   }
 
-//   @Get('request') 
+//   @Get('request')
 //   getRequestDetails(@Req() req: Request) {
 //     return {
 //       method: req.method,
@@ -48,7 +74,7 @@ export class MovieController {
 //     };
 //   }
 
-//   @Get('response') 
+//   @Get('response')
 //   getResponceDetails(@Res() res: Response) {
 //     res.status(201).json({message: 'Hello mr. sir'})
 //   }

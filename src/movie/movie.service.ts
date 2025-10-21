@@ -61,4 +61,72 @@ export class MovieService {
 
     return movie;
   }
+
+  async getById(id: string): Promise<Movie> {
+    const movie = await this.prismaService.movie.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        actors: true,
+        poster: true,
+      },
+    });
+
+    if (!movie || !movie.isAvailable) {
+      throw new NotFoundException('Фільм не знайдено');
+    }
+
+    return movie;
+  }
+
+  async update(id: string, dto: CreateMovieDto): Promise<boolean> {
+    const movie = await this.getById(id);
+
+    const actors = await this.prismaService.actor.findMany({
+      where: {
+        id: { in: dto.actorIds },
+      },
+    });
+
+    if (!actors || !actors.length) {
+      throw new NotFoundException('Актора не знайдено');
+    }
+
+    await this.prismaService.movie.update({
+      where: {
+        id: movie.id,
+      },
+      data: {
+        title: dto.title,
+        releaseYear: dto.releaseYear,
+        poster: dto.imageUrl
+          ? {
+              create: {
+                url: dto.imageUrl,
+              },
+            }
+          : undefined,
+        actors: {
+          connect: actors.map(actor => ({
+            id: actor.id,
+          })),
+        },
+      },
+    });
+
+    return true;
+  }
+
+  async delete(id: string): Promise<string> {
+    const movie = await this.getById(id);
+
+    await this.prismaService.movie.delete({
+      where: {
+        id: movie.id,
+      }
+    })
+
+    return movie.id;
+  }
 }
